@@ -38,8 +38,8 @@ constexpr uint8_t  CAM_RES   = CAMERA_R320x240;
 constexpr uint8_t  CAM_FMT   = CAMERA_RGB565;
 // constexpr uint8_t  CAM_FMT   = CAMERA_GRAYSCALE;
 constexpr uint8_t  FPS       = 30;
-constexpr uint8_t  JPG_QUAL  = JPEGE_Q_LOW;
-constexpr size_t   JPG_BUF_SZ = 80 * 1024;
+constexpr uint8_t  JPG_QUAL  = JPEGE_Q_MED;
+constexpr size_t   JPG_BUF_SZ = 40 * 1024;
 static uint8_t     jpgBuf[JPG_BUF_SZ];
 
 WiFiServer server(80);
@@ -104,15 +104,16 @@ while (c.connected()) {
 
     // ---- 1. Grab Frame ----
     if (cam.grabFrame(fb, 3000) == 0) {
+        unsigned long cam_capture_ms = millis();
         unsigned long t1 = micros();
 
         // ---- 2. Swap Color Bytes ----
-        // uint8_t *buf8 = fb.getBuffer();
-        // static uint8_t swapBuf[320*240*2];
-        // for (int i = 0; i < 320 * 240; i++) {
-        //     swapBuf[2*i]   = buf8[2*i+1];
-        //     swapBuf[2*i+1] = buf8[2*i];
-        // }
+        uint8_t *buf8 = fb.getBuffer();
+        static uint8_t swapBuf[320*240*2];
+        for (int i = 0; i < 320 * 240; i++) {
+            swapBuf[2*i]   = buf8[2*i+1];
+            swapBuf[2*i+1] = buf8[2*i];
+        }
         unsigned long t2 = micros();
 
         // delay(2);
@@ -138,6 +139,8 @@ while (c.connected()) {
         digitalWrite(LED_BUILTIN, LOW);
         c.print("--frame\r\nContent-Type: image/jpeg\r\nContent-Length: ");
         c.print(jpegLen);
+        c.print("\r\nX-Timestamp: ");
+        c.print(cam_capture_ms);
         c.print("\r\n\r\n");
         c.write(jpgBuf, jpegLen);
         c.print("\r\n");
