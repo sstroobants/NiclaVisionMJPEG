@@ -78,12 +78,14 @@ void connectWiFi()
 void setup()
 {
   pinMode(LED_BUILTIN, OUTPUT);
-  Serial.begin(115200); while (!Serial);
+  Serial.begin(115200);
+  delay(100);
 
   if (!cam.begin(CAM_RES, CAM_FMT, FPS)) {
     Serial.println(F("Camera init failed — check ribbon & power"));
     while (true);
   }
+  cam.setVerticalFlip(true);
 
   connectWiFi();
 }
@@ -135,7 +137,7 @@ void loop()
             // Serial.print("Sending JPEG of size: ");
             // Serial.println(jpegLen);
 
-            if (jpegLen < 1000 || jpegLen > 10000) {
+            if (jpegLen < 1000 || jpegLen > 13000) {
                 Serial.print("Discarding frame with odd JPEG size: ");
                 Serial.println(jpegLen);
                 continue; // Skip this frame!
